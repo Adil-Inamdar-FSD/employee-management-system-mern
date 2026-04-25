@@ -169,10 +169,11 @@ const attendanceReminderCron = inngest.createFunction(
                                 <p style="font-size: 16px;"><strong>QuickEMS</strong></p>
                             </div>`,
           });
-        });
+        })
+        await Promise.all(emailPromises)
+        return {emailsSent:absentEmployees.length}
       });
     }
-    await Promise.all(emailPromises)
     return {
       totalActive: activeemployees.length,
       onLeave: onLeaveIds.length,
