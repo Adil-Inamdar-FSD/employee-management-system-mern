@@ -1,18 +1,42 @@
 import { Loader2, Save, User } from "lucide-react";
 import React, { useState } from "react";
+import api from "../api/axios";
 
 const ProfileForm = ({ initialData, onSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (initialData?.isDeleted) return;
+
+    setLoading(true);
+    setError("");
+    setMessage("");
+
+    const formData = new FormData(e.currentTarget);
+
+    try {
+      await api.post("/profile", formData);
+
+      setMessage("Profile updated successfully");
+      onSuccess?.();
+    } catch (err) {
+      setError(err.response?.data?.error || err?.message || "Update failed");
+    } finally {
+      setLoading(false);
+    }
   };
+
   return (
     <form onSubmit={handleSubmit} className="card p-5 sm:p-6 mb-6">
       <h2 className="text-base font-medium text-slate-900 mb-6 pb-4 border-b border-slate-100 flex items-center gap-2">
-        <User className="w-5 h-5 text-slate-400" /> Public Profile
+        <User className="w-5 h-5 text-slate-400" />
+        Public Profile
       </h2>
+
       {error && (
         <div className="bg-rose-50 text-rose-700 p-4 rounded-xl text-sm border border-rose-200 mb-6 flex items-start gap-3">
           <div className="w-1.5 h-1.5 rounded-full bg-rose-500 mt-1.5 shrink-0" />
@@ -26,6 +50,7 @@ const ProfileForm = ({ initialData, onSuccess }) => {
           {message}
         </div>
       )}
+
       <div className="space-y-5">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
@@ -34,47 +59,60 @@ const ProfileForm = ({ initialData, onSuccess }) => {
             </label>
             <input
               disabled
-              value={`${initialData.firstName} ${initialData.lastName}`}
+              readOnly
+              value={`${initialData?.firstName || ""} ${
+                initialData?.lastName || ""
+              }`}
               className="bg-slate-50 text-slate-400 cursor-not-allowed"
             />
           </div>
+
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">
               Email
             </label>
             <input
               disabled
-              value={initialData.email}
+              readOnly
+              value={initialData?.email || ""}
               className="bg-slate-50 text-slate-400 cursor-not-allowed"
             />
           </div>
+
           <div className="sm:col-span-2">
             <label className="block text-sm font-medium text-slate-700 mb-2">
               Position
             </label>
             <input
               disabled
-              value={initialData.position}
+              readOnly
+              value={initialData?.position || ""}
               className="bg-slate-50 text-slate-400 cursor-not-allowed"
             />
           </div>
         </div>
+
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-2">
             Bio
           </label>
           <textarea
-            disabled={initialData.isDeleted}
+            disabled={initialData?.isDeleted}
             name="bio"
-            defaultValue={initialData.bio || ""}
-            placeholder="Write a brief bio...."
-            className={`resize-none ${initialData.isDeleted ? "bg-slate-50 text-slate-400 cursor-not-allowed" : ""}`}
+            defaultValue={initialData?.bio || ""}
+            placeholder="Write a brief bio..."
+            className={`resize-none ${
+              initialData?.isDeleted
+                ? "bg-slate-50 text-slate-400 cursor-not-allowed"
+                : ""
+            }`}
           />
           <p className="text-xs text-slate-400 mt-1.5">
             This will be displayed in your profile.
           </p>
         </div>
-        {initialData.isDeleted ? (
+
+        {initialData?.isDeleted ? (
           <div className="pt-2">
             <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl text-center">
               <p className="text-rose-600 font-medium tracking-tight">
@@ -90,10 +128,14 @@ const ProfileForm = ({ initialData, onSuccess }) => {
             <button
               type="submit"
               disabled={loading}
-              className="btn-primary flex items-center gap-2 justify-center w-full sm:w-auto"
+              className="btn-primary flex items-center gap-2 justify-center w-full sm:w-auto disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              {loading ? <Loader2 className="w-4 h-4 animate-spin"/> : <Save className="w-4 h-4" />}
-              Save Changes
+              {loading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Save className="w-4 h-4" />
+              )}
+              {loading ? "Saving..." : "Save Changes"}
             </button>
           </div>
         )}

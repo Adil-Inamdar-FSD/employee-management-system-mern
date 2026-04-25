@@ -1,5 +1,14 @@
-import { CalendarDays, FileText, FileTextIcon, Loader2, Send, X } from "lucide-react";
+import {
+  CalendarDays,
+  FileText,
+  FileTextIcon,
+  Loader2,
+  Send,
+  X,
+} from "lucide-react";
 import React, { useState } from "react";
+import api from "../../api/axios";
+import toast from "react-hot-toast";
 
 const ApplyLeaveModal = ({ open, onClose, onSuccess }) => {
   const [loading, setLoading] = useState(false);
@@ -7,8 +16,32 @@ const ApplyLeaveModal = ({ open, onClose, onSuccess }) => {
   const tomorrow = new Date(today);
   tomorrow.setDate(today.getDate() + 1);
   const minDate = tomorrow.toISOString().split("T")[0];
-  const handleSumit = async (e) => {
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+
+    const formData = new FormData(e.currentTarget);
+    const data = Object.fromEntries(formData.entries());
+
+    console.log("Leave data sending:", data);
+
+    try {
+      const res = await api.post("/leave", data);
+
+      console.log("Leave created:", res.data);
+
+      toast.success("Leave request submitted");
+      onSuccess?.();
+      onClose();
+    } catch (err) {
+      console.log("Leave submit error:", err.response?.data || err.message);
+      toast.error(
+        err.response?.data?.error || err.message || "Failed to submit leave",
+      );
+    } finally {
+      setLoading(false);
+    }
   };
   if (!open) return null;
   return (
@@ -39,7 +72,7 @@ const ApplyLeaveModal = ({ open, onClose, onSuccess }) => {
         </div>
 
         {/* form  */}
-        <form onSubmit={handleSumit} className="p-6 space-y-5">
+        <form onSubmit={handleSubmit} className="p-6 space-y-5">
           {/* leave type  */}
           <div>
             <label className="flex items-center gap-2 text-sm font-medium text-slate-700 mb-2">
@@ -95,11 +128,14 @@ const ApplyLeaveModal = ({ open, onClose, onSuccess }) => {
 
             <button
               type="submit"
-              onClick={onClose}
               disabled={loading}
               className="btn-primary flex-1 flex items-center justify-center gap-2"
             >
-              {loading ? <Loader2 className="w-4 h-4 animate-spin"/> : <Send className="w-4 h-4"/>}
+              {loading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Send className="w-4 h-4" />
+              )}
               {loading ? "Submitting..." : "Submit"}
             </button>
           </div>

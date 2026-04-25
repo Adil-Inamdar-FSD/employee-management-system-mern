@@ -9,8 +9,8 @@ export const getEmployees = async (req, res) => {
     const { department } = req.query;
     const where = {};
     if (department) where.department = department;
-    const employees = (await Employee.find(where))
-      .toSorted({ createdAt: -1 })
+    const employees = await Employee.find(where)
+      .sort({ createdAt: -1 })
       .populate("userId", "email role")
       .lean();
     const result = employees.map((emp) => ({
@@ -138,14 +138,21 @@ export const updateEmployee = async (req, res) => {
 export const deleteEmployee = async (req, res) => {
   try {
     const { id } = req.params;
-    const employee = Employee.findById(id);
-    if (!employee) return res.status(404).json({ error: "Employee not found" });
+
+    const employee = await Employee.findById(id);
+
+    if (!employee) {
+      return res.status(404).json({ error: "Employee not found" });
+    }
 
     employee.isDeleted = true;
     employee.employmentStatus = "INACTIVE";
+
     await employee.save();
+
     return res.json({ success: true });
   } catch (error) {
-    return res.status(500).json({ error: "Failed to delete employee" });
+    console.error("Delete employee error:", error);
+    return res.status(500).json({ error: error.message });
   }
 };

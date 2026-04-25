@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { DEPARTMENTS } from "../assets/assets";
 import { Loader2Icon } from "lucide-react";
+import api from "../api/axios";
+import toast from "react-hot-toast";
 
 const EmployeeForm = ({ initialData, onSuccess, onCancel }) => {
   const navigate = useNavigate();
@@ -9,6 +11,22 @@ const EmployeeForm = ({ initialData, onSuccess, onCancel }) => {
   const isEditMode = !!initialData;
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true)
+    const formData = new FormData(e.currentTarget)
+    if(isEditMode){
+      const pwd = formData.get("password")
+      if(!pwd) formData.delete("password")
+    }
+  try {
+   const url = isEditMode ? `/employees/${initialData._id}` : "/employees";
+    const method = isEditMode ? "put" : "post"
+    await api[method](url,formData)
+    onSuccess ? onSuccess() : navigate("/employees")
+  } catch (err) {
+    toast.error(err.response?.data?.error || err.message);
+  } finally{
+    setLoading(false)
+  }
   };
   return (
     <form

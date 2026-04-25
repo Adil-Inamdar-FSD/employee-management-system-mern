@@ -17,7 +17,7 @@ export const getProfile = async (req, res) => {
     }
     return res.json(employee);
   } catch (error) {
-    return res.status(500).json({ error: "Failed to fetch profile" });
+    return res.status(404).json({ error: "Failed to fetch profile" });
   }
 };
 
@@ -33,7 +33,7 @@ export const updateProfile = async (req, res) => {
         error: "Your account is deactivated. You cannot update your profile.",
       });
     }
-    await employee.findByIdAndUpdate(employee._id, { bio: req.body.bio });
+    await Employee.findByIdAndUpdate(employee._id, { bio: req.body.bio });
     return res.json({ success: true });
   } catch (error) {
     return res.status(500).json({ error: "Failed to update profile" });

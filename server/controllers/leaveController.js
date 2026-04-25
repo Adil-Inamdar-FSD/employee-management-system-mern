@@ -7,29 +7,38 @@ import LeaveApplication from "../models/LaevApplication.js";
 export const createLeave = async (req, res) => {
   try {
     const session = req.session;
-    const employee = Employee.findOne({ userId: session.userId });
-    if (!employee) return res.status(404).json({ error: "Employee not found" });
+
+    const employee = await Employee.findOne({ userId: session.userId });
+
+    if (!employee) {
+      return res.status(404).json({ error: "Employee not found" });
+    }
+
     if (employee.isDeleted) {
       return res.status(403).json({
         error: "Your account is deactivated. You cannot apply for leave.",
       });
     }
+
     const { type, startDate, endDate, reason } = req.body;
+
     if (!type || !startDate || !endDate || !reason) {
       return res.status(400).json({ error: "Missing fields" });
     }
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+
     if (new Date(startDate) <= today || new Date(endDate) <= today) {
-      return res
-        .status(400)
-        .json({ error: "Leave dates must be in the future" });
+      return res.status(400).json({
+        error: "Leave dates must be in the future",
+      });
     }
 
     if (new Date(endDate) < new Date(startDate)) {
-      return res
-        .status(400)
-        .json({ error: "End dates cannot be before start date" });
+      return res.status(400).json({
+        error: "End date cannot be before start date",
+      });
     }
 
     const leave = await LeaveApplication.create({
@@ -47,9 +56,14 @@ export const createLeave = async (req, res) => {
         leaveApplicationId: leave._id,
       },
     });
+
     return res.json({ success: true, data: leave });
   } catch (error) {
-    return res.status(500).json({ error: "Failed" });
+    console.log("CREATE LEAVE ERROR:", error);
+
+    return res.status(500).json({
+      error: error.message || "Failed to create leave",
+    });
   }
 };
 
