@@ -60,7 +60,7 @@ app.use(
 /* =========================
    HANDLE PREFLIGHT
 ========================= */
-app.options("*", cors());
+app.options("/*splat", cors());
 
 /* =========================
    MIDDLEWARE
