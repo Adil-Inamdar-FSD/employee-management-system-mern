@@ -1,24 +1,27 @@
 import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { dummyProfileData } from "../assets/assets";
 import {
   CalendarIcon,
   ChevronRightIcon,
   DollarSignIcon,
   FileTextIcon,
-  LayoutGridIcon,
+  LayoutDashboardIcon,
   Loader2,
   LogOutIcon,
   MenuIcon,
   SettingsIcon,
+  ShieldCheck,
   UserIcon,
+  UsersIcon,
   XIcon,
 } from "lucide-react";
+
 import { useAuth } from "../context/AuthContext";
 import api from "../api/axios";
 
 const Sidebar = () => {
   const { pathname } = useLocation();
+
   const [userName, setUserName] = useState("");
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -26,152 +29,212 @@ const Sidebar = () => {
 
   useEffect(() => {
     api.get("/profile").then(({ data }) => {
-      if (data.firstName)
+      if (data.firstName) {
         setUserName(`${data.firstName} ${data.lastName || ""}`.trim());
+      }
     });
   }, []);
 
-  // Close mobile sidebar on route change
   useEffect(() => {
     setMobileOpen(false);
   }, [pathname]);
 
   const role = user?.role;
+
   const navItems = [
-    { name: "Dashboard", href: "/dashboard", icon: LayoutGridIcon },
+    {
+      name: "Dashboard",
+      href: "/dashboard",
+      icon: LayoutDashboardIcon,
+    },
+
     role === "ADMIN"
-      ? { name: "Employees", href: "/employees", icon: UserIcon }
-      : { name: "Attendance", href: "/attendance", icon: CalendarIcon },
-    { name: "Leave", href: "/leave", icon: FileTextIcon },
-    { name: "Payslips", href: "/payslips", icon: DollarSignIcon },
-    { name: "Settings", href: "/settings", icon: SettingsIcon },
+      ? {
+          name: "Employees",
+          href: "/employees",
+          icon: UsersIcon,
+        }
+      : {
+          name: "Attendance",
+          href: "/attendance",
+          icon: CalendarIcon,
+        },
+
+    {
+      name: "Leave",
+      href: "/leave",
+      icon: FileTextIcon,
+    },
+
+    {
+      name: "Payslips",
+      href: "/payslips",
+      icon: DollarSignIcon,
+    },
+
+    {
+      name: "Settings",
+      href: "/settings",
+      icon: SettingsIcon,
+    },
   ];
-  const handlelogout = () => {
-    logout()
+
+  const handleLogout = () => {
+    logout();
     window.location.href = "/login";
   };
 
   const sidebarContent = (
     <>
-      {/* brand header  */}
-      <div className="px-5 pt-6 pb-5 border-b border-white/6">
+      {/* Top Brand */}
+      <div className="border-b border-white/10 px-5 py-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <UserIcon className="text-white size-7" />
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-600 shadow-lg shadow-indigo-500/30">
+              <ShieldCheck className="h-5 w-5 text-white" />
+            </div>
 
             <div>
-              <p className="font-semibold text-[13px] text-white tracking-wide">
+              <h2 className="text-sm font-bold tracking-wide text-white">
                 Employee MS
-              </p>
-              <p className="text-[11px] text-slate-500 font-medium">
-                Managment System
-              </p>
+              </h2>
+
+              <p className="text-xs text-slate-400">Management Dashboard</p>
             </div>
           </div>
-          {/* closed button in mobile  */}
+
           <button
             onClick={() => setMobileOpen(false)}
-            className="lg:hidden text-slate-400 hover:text-white p-1"
+            className="lg:hidden rounded-lg p-1.5 text-slate-400 hover:bg-white/10 hover:text-white"
           >
-            <XIcon size={20} />
+            <XIcon size={18} />
           </button>
         </div>
       </div>
-      {/* user profile card  */}
+
+      {/* Profile Card */}
       {userName && (
-        <div className="mx-3 mt-4 mb-1 p-3 rounded-lg bg-white/3 border border-white/4">
+        <div className="mx-4 mt-5 rounded-3xl border border-white/10 bg-white/5 p-4 backdrop-blur-xl">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-slate-800 flex items-center justify-center ring-1 ring-white/10 shrink-0">
-              <span className="text-slate-400 text-xs font-semibold">
-                {userName.charAt(0).toUpperCase()}
-              </span>
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 text-sm font-bold text-white shadow-lg">
+              {userName.charAt(0).toUpperCase()}
             </div>
+
             <div className="min-w-0">
-              <p className="text-[13px] font-medium text-slate-200 truncate">
+              <h3 className="truncate text-sm font-semibold text-white">
                 {userName}
-              </p>
-              <p className="text-[11px] text-slate-500 truncate">
-                {role === "ADMIN" ? "Administrator" : "EMPLOYEE"}
+              </h3>
+
+              <p className="truncate text-xs text-slate-400">
+                {role === "ADMIN"
+                  ? "System Administrator"
+                  : "Employee Workspace"}
               </p>
             </div>
           </div>
         </div>
       )}
-      {/* section label  */}
-      <div className="px-5 pt-5 pb-2">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500">
-          Navigation
+
+      {/* Navigation */}
+      <div className="px-5 pt-6 pb-3">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+          Main Menu
         </p>
       </div>
-      {/* navigation list  */}
-      <div className="flex-1 px-3 space-y-0.5 overflow-y-auto">
+
+      <div className="flex-1 space-y-1 overflow-y-auto px-3 pb-5">
         {loading ? (
-          <div className="px-3 py-3 flex items-center gap-2 text-slate-500">
-            <Loader2 className="animate-spin w-4 h-4" />
-            <span className="text-sm">Loading.....</span>
+          <div className="flex items-center gap-2 px-3 py-3 text-slate-400">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <span className="text-sm">Loading...</span>
           </div>
         ) : (
           navItems.map((item) => {
-            const isactive = pathname.startsWith(item.href);
+            const isActive = pathname.startsWith(item.href);
+
             return (
               <Link
                 key={item.name}
                 to={item.href}
-                className={`group flex items-center gap-3 py-2.5 rounded-md text-[13px] font-medium transition-all duration-150 relative ${isactive ? "bg-indigo-500/12 text-indigo-300" : "text-slate-300 hover:text-white hover:bg-white/4"}`}
+                className={`group relative flex items-center gap-3 overflow-hidden rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-300 ${
+                  isActive
+                    ? "bg-gradient-to-r from-indigo-500/20 to-violet-500/10 text-white shadow-lg shadow-indigo-500/10"
+                    : "text-slate-300 hover:bg-white/5 hover:text-white"
+                }`}
               >
-                {isactive && (
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-indigo-500" />
+                {isActive && (
+                  <div className="absolute left-0 top-2 bottom-2 w-1 rounded-r-full bg-indigo-500" />
                 )}
-                <item.icon
-                  className={`w-[17px] h-[17px] shrink-0 ${isactive ? "text-indigo-300" : "text-slate-400 group-hover:text-slate-300"}`}
-                />
+
+                <div
+                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all duration-300 ${
+                    isActive
+                      ? "bg-indigo-500 text-white"
+                      : "bg-white/5 text-slate-400 group-hover:bg-white/10 group-hover:text-white"
+                  }`}
+                >
+                  <item.icon className="h-[18px] w-[18px]" />
+                </div>
+
                 <span className="flex-1">{item.name}</span>
-                {isactive && (
-                  <ChevronRightIcon className="w-3.5 h-3.5 text-indigo-500/50" />
-                )}
+
+                <ChevronRightIcon
+                  className={`h-4 w-4 transition-all duration-300 ${
+                    isActive
+                      ? "translate-x-0 text-indigo-300"
+                      : "translate-x-[-4px] opacity-0 group-hover:translate-x-0 group-hover:opacity-100"
+                  }`}
+                />
               </Link>
             );
           })
         )}
       </div>
 
-      {/* logout  */}
-      <div className="p-3 border-t border-white/6">
+      {/* Bottom Logout */}
+      <div className="border-t border-white/10 p-4">
         <button
-          onClick={handlelogout}
-          className="flex items-center gap-3 w-full px-3 py-2.5 rounded-md text-[13px] font-medium text-slate-400 hover:text-rose-400 hover:bg-rose-500/8 transition-all duration-150"
+          onClick={handleLogout}
+          className="group flex w-full items-center gap-3 rounded-2xl border border-transparent px-4 py-3 text-sm font-medium text-slate-400 transition-all duration-300 hover:border-rose-500/20 hover:bg-rose-500/10 hover:text-rose-400"
         >
-          <LogOutIcon className="w-[17px] h-[17px]" />
-          <span>Log out</span>
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/5 transition-all duration-300 group-hover:bg-rose-500/20">
+            <LogOutIcon className="h-[18px] w-[18px]" />
+          </div>
+
+          <span>Logout</span>
         </button>
       </div>
     </>
   );
+
   return (
     <>
-      {/* mobile hamburger button  */}
+      {/* Mobile Menu Button */}
       <button
         onClick={() => setMobileOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-slate-900 text-white rounded-lg shadow-lg  border border-white/10"
+        className="fixed left-4 top-4 z-50 rounded-2xl border border-white/10 bg-slate-900 p-3 text-white shadow-2xl lg:hidden"
       >
         <MenuIcon size={20} />
       </button>
 
-      {/* mobile overlay  */}
+      {/* Overlay */}
       {mobileOpen && (
         <div
-          className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden"
           onClick={() => setMobileOpen(false)}
         />
       )}
-      {/* sidebar - desktop  */}
-      <aside className="hidden lg:flex flex-col h-full w-[260px] bg-linear-to-b from-slate-900 via-slate-900 to-slate-950 text-white shrink-0 border-r border-white/4">
+
+      {/* Desktop Sidebar */}
+      <aside className="hidden h-full w-[290px] shrink-0 border-r border-white/5 bg-gradient-to-b from-[#0f172a] via-[#111827] to-[#020617] lg:flex lg:flex-col">
         {sidebarContent}
       </aside>
 
-      {/* sidebar - mobile  */}
+      {/* Mobile Sidebar */}
       <aside
-        className={`lg:hidden fixed inset-y-0 left-0 w-72 bg-linear-to-b from-slate-900 via-slate-900 to-slate-950 text-white z-50 flex flex-col transform transition-transform duration-300 ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}
+        className={`fixed inset-y-0 left-0 z-50 flex w-[290px] flex-col bg-gradient-to-b from-[#0f172a] via-[#111827] to-[#020617] shadow-2xl transition-transform duration-300 lg:hidden ${
+          mobileOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
       >
         {sidebarContent}
       </aside>

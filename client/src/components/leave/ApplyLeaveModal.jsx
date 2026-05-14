@@ -1,21 +1,17 @@
-import {
-  CalendarDays,
-  FileText,
-  FileTextIcon,
-  Loader2,
-  Send,
-  X,
-} from "lucide-react";
+import { CalendarDays, FileText, Loader2, Send, X } from "lucide-react";
 import React, { useState } from "react";
 import api from "../../api/axios";
 import toast from "react-hot-toast";
 
 const ApplyLeaveModal = ({ open, onClose, onSuccess }) => {
   const [loading, setLoading] = useState(false);
+
   const today = new Date();
   const tomorrow = new Date(today);
   tomorrow.setDate(today.getDate() + 1);
   const minDate = tomorrow.toISOString().split("T")[0];
+
+  if (!open) return null;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -24,18 +20,13 @@ const ApplyLeaveModal = ({ open, onClose, onSuccess }) => {
     const formData = new FormData(e.currentTarget);
     const data = Object.fromEntries(formData.entries());
 
-    console.log("Leave data sending:", data);
-
     try {
-      const res = await api.post("/leave", data);
+      await api.post("/leave", data);
 
-      console.log("Leave created:", res.data);
-
-      toast.success("Leave request submitted");
+      toast.success("Leave request submitted successfully");
       onSuccess?.();
       onClose();
     } catch (err) {
-      console.log("Leave submit error:", err.response?.data || err.message);
       toast.error(
         err.response?.data?.error || err.message || "Failed to submit leave",
       );
@@ -43,85 +34,130 @@ const ApplyLeaveModal = ({ open, onClose, onSuccess }) => {
       setLoading(false);
     }
   };
-  if (!open) return null;
+
+  const inputClass =
+    "w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition-all duration-300 placeholder:text-slate-400 focus:border-indigo-400 focus:bg-white focus:ring-4 focus:ring-indigo-100";
+
+  const labelClass =
+    "mb-2 flex items-center gap-2 text-sm font-semibold text-slate-700";
+
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
-        className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg animate-fade-in"
+        className="max-h-[90dvh] w-full max-w-xl overflow-y-auto rounded-[30px] border border-white/70 bg-white/95 shadow-2xl shadow-slate-900/30 backdrop-blur-xl"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* header  */}
-        <div className="flex items-center justify-between p-6 pb-0">
-          <div>
-            <h2 className="text-lg font-semibold text-slate-800">
-              Apply for Leave
-            </h2>
-            <p className="text-sm text-slate-400 mt-0.5">
-              Submit your leave request for approval
-            </p>
+        {/* Header */}
+        <div className="sticky top-0 z-10 flex items-start justify-between border-b border-slate-100 bg-white/95 px-5 py-5 backdrop-blur-xl sm:px-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
+              <FileText className="h-6 w-6" />
+            </div>
+
+            <div>
+              <h2 className="text-lg font-bold text-slate-900">
+                Apply for Leave
+              </h2>
+              <p className="text-sm text-slate-500">
+                Submit your leave request for approval
+              </p>
+            </div>
           </div>
+
           <button
             onClick={onClose}
-            className="p-2 rounded-lg hover:bg-slate-100 transition-colors text-slate-400 hover:text-slate-600"
+            type="button"
+            className="flex h-10 w-10 items-center justify-center rounded-2xl text-slate-400 transition-all duration-300 hover:bg-slate-100 hover:text-slate-700"
           >
-            <X className="w-5 h-5" />
+            <X className="h-5 w-5" />
           </button>
         </div>
 
-        {/* form  */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-5">
-          {/* leave type  */}
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-5 p-5 sm:p-6">
+          {/* Leave Type */}
           <div>
-            <label className="flex items-center gap-2 text-sm font-medium text-slate-700 mb-2">
-              <FileText className="w-4 h-4 text-slate-400" />
+            <label className={labelClass}>
+              <FileText className="h-4 w-4 text-indigo-500" />
               Leave Type
             </label>
-            <select name="type" required>
+
+            <select name="type" required className={inputClass}>
               <option value="SICK">Sick Leave</option>
               <option value="CASUAL">Casual Leave</option>
               <option value="ANNUAL">Annual Leave</option>
             </select>
           </div>
-          {/* duration  */}
+
+          {/* Duration */}
           <div>
-            <label className="flex items-center gap-2 text-sm font-medium text-slate-700 mb-2">
-              <CalendarDays className="w-4 h-4 text-slate-400" />
+            <label className={labelClass}>
+              <CalendarDays className="h-4 w-4 text-indigo-500" />
               Duration
             </label>
-            <div className="grid grid-cols-2 gap-4">
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <span className="block text-xs text-slate-400 mb-1">From</span>
-                <input type="date" name="startDate" required min={minDate} />
+                <span className="mb-1.5 block text-xs font-semibold text-slate-400">
+                  From
+                </span>
+
+                <input
+                  type="date"
+                  name="startDate"
+                  required
+                  min={minDate}
+                  className={inputClass}
+                />
               </div>
+
               <div>
-                <span className="block text-xs text-slate-400 mb-1">To</span>
-                <input type="date" name="endDate" required min={minDate} />
+                <span className="mb-1.5 block text-xs font-semibold text-slate-400">
+                  To
+                </span>
+
+                <input
+                  type="date"
+                  name="endDate"
+                  required
+                  min={minDate}
+                  className={inputClass}
+                />
               </div>
             </div>
           </div>
 
-          {/* reason  */}
+          {/* Reason */}
           <div>
-            <label className="text-sm font-medium text-slate-700 mb-2 block">
+            <label className="mb-2 block text-sm font-semibold text-slate-700">
               Reason
             </label>
+
             <textarea
               name="reason"
               required
-              rows={3}
-              className="resize-none"
-              placeholder="Breifly describe why you need this leave"
+              rows={4}
+              className={`${inputClass} resize-none`}
+              placeholder="Briefly describe why you need this leave"
             />
           </div>
-          {/* buttons  */}
-          <div className="flex gap-3 pt-2">
+
+          {/* Note */}
+          <div className="rounded-2xl border border-indigo-100 bg-indigo-50 px-4 py-3">
+            <p className="text-sm leading-6 text-indigo-700">
+              Leave applications can only be submitted for future dates.
+            </p>
+          </div>
+
+          {/* Buttons */}
+          <div className="flex flex-col-reverse gap-3 border-t border-slate-100 pt-5 sm:flex-row">
             <button
               type="button"
               onClick={onClose}
-              className="btn-secondary flex-1"
+              className="flex-1 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition-all duration-300 hover:border-slate-300 hover:bg-slate-50"
             >
               Cancel
             </button>
@@ -129,14 +165,15 @@ const ApplyLeaveModal = ({ open, onClose, onSuccess }) => {
             <button
               type="submit"
               disabled={loading}
-              className="btn-primary flex-1 flex items-center justify-center gap-2"
+              className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-600 to-indigo-500 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-indigo-500/30 transition-all duration-300 hover:from-indigo-700 hover:to-indigo-600 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {loading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                <Send className="w-4 h-4" />
+                <Send className="h-4 w-4" />
               )}
-              {loading ? "Submitting..." : "Submit"}
+
+              {loading ? "Submitting..." : "Submit Request"}
             </button>
           </div>
         </form>
